@@ -33,3 +33,13 @@ minecraft:stone
 ```
 
 *Please note that to disable logging for blocks, CoreProtect v23+ is required, and you must include the namespace. For example, to disable logging for dirt, you must add it as "minecraft:dirt".*
+
+## Ignoring Specific Commands
+
+For sensitive commands that should never reach the database (e.g., `/login`), set the `ignored-commands` option in `config.yml`. Provide a comma-separated list without spaces, such as:
+
+```yaml
+ignored-commands: "/login,/register,/changepassword"
+```
+
+These commands will be skipped even when `player-commands` logging is enabled. The value also appears in per-world config overrides if you need different ignore lists per world.

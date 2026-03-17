@@ -8,10 +8,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Set;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -100,6 +102,7 @@ public class ConfigHandler extends Queue {
     public static Map<String, int[]> rollbackHash = syncMap();
     public static Map<String, Boolean> inspecting = syncMap();
     public static Map<String, Boolean> blacklist = syncMap();
+    private static final ConcurrentHashMap<String, Set<String>> ignoredCommandCache = new ConcurrentHashMap<>();
     public static Map<String, Integer> loggingChest = syncMap();
     public static Map<String, Integer> loggingItem = syncMap();
     public static ConcurrentHashMap<String, List<Object>> transactingChest = new ConcurrentHashMap<>();
@@ -176,6 +179,81 @@ public class ConfigHandler extends Queue {
         }
     }
 
+    private static void reloadIgnoredCommands() {
+        ignoredCommandCache.clear();
+    }
+
+    private static String normalizeCommand(String command) {
+        if (command == null) {
+            return "";
+        }
+
+        String normalized = command.trim();
+        if (normalized.startsWith("/")) {
+            normalized = normalized.substring(1);
+        }
+
+        return normalized.toLowerCase(Locale.ROOT);
+    }
+
+    public static boolean shouldIgnoreCommand(Player player, String message) {
+        if (player == null) {
+            return shouldIgnoreCommand(message, Config.getGlobal().IGNORED_COMMANDS);
+        }
+
+        Config worldConfig = Config.getConfig(player.getWorld());
+        return shouldIgnoreCommand(message, worldConfig.IGNORED_COMMANDS);
+    }
+
+    public static boolean shouldIgnoreCommand(String message) {
+        return shouldIgnoreCommand(message, Config.getGlobal().IGNORED_COMMANDS);
+    }
+
+    private static boolean shouldIgnoreCommand(String message, String rawList) {
+        if (message == null) {
+            return false;
+        }
+
+        Set<String> ignoredCommands = getIgnoredCommands(rawList);
+        if (ignoredCommands.isEmpty()) {
+            return false;
+        }
+
+        String[] parts = message.trim().split(" ");
+        if (parts.length == 0) {
+            return false;
+        }
+
+        String normalized = normalizeCommand(parts[0]);
+        return !normalized.isEmpty() && ignoredCommands.contains(normalized);
+    }
+
+    private static Set<String> getIgnoredCommands(String rawList) {
+        String key = rawList == null ? "" : rawList;
+        return ignoredCommandCache.computeIfAbsent(key, ConfigHandler::parseIgnoredCommandList);
+    }
+
+    private static Set<String> parseIgnoredCommandList(String rawList) {
+        if (rawList == null || rawList.trim().isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        Set<String> commands = new HashSet<>();
+        String[] entries = rawList.split(",");
+        for (String entry : entries) {
+            String normalized = normalizeCommand(entry);
+            if (!normalized.isEmpty()) {
+                commands.add(normalized);
+            }
+        }
+
+        if (commands.isEmpty()) {
+            return Collections.emptySet();
+        }
+
+        return Collections.unmodifiableSet(commands);
+    }
+
     private static void loadConfig() {
         try {
             Config.init();
@@ -197,6 +275,7 @@ public class ConfigHandler extends Queue {
             ConfigHandler.prefix = Config.getGlobal().PREFIX;
 
             ConfigHandler.loadBlacklist(); // Load the blacklist file if it exists.
+            ConfigHandler.reloadIgnoredCommands();
         }
         catch (Exception e) {
             e.printStackTrace();

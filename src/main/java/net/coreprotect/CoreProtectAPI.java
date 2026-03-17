@@ -21,6 +21,7 @@ import net.coreprotect.api.BlockAPI;
 import net.coreprotect.api.QueueLookup;
 import net.coreprotect.api.SessionLookup;
 import net.coreprotect.config.Config;
+import net.coreprotect.config.ConfigHandler;
 import net.coreprotect.consumer.Queue;
 import net.coreprotect.database.Database;
 import net.coreprotect.database.Lookup;
@@ -250,6 +251,10 @@ public class CoreProtectAPI extends Queue {
         }
 
         if (command == null || command.isEmpty() || !command.startsWith("/")) {
+            return false;
+        }
+
+        if (ConfigHandler.shouldIgnoreCommand(player, command)) {
             return false;
         }
 

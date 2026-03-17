@@ -83,6 +83,7 @@ public class Config extends Language {
     public boolean PLAYER_INTERACTIONS;
     public boolean PLAYER_MESSAGES;
     public boolean PLAYER_COMMANDS;
+    public String IGNORED_COMMANDS;
     public boolean PLAYER_SESSIONS;
     public boolean UNKNOWN_LOGGING;
     public boolean USERNAME_CHANGES;
@@ -138,6 +139,7 @@ public class Config extends Language {
         DEFAULT_VALUES.put("player-interactions", "true");
         DEFAULT_VALUES.put("player-messages", "true");
         DEFAULT_VALUES.put("player-commands", "true");
+        DEFAULT_VALUES.put("ignored-commands", "");
         DEFAULT_VALUES.put("player-sessions", "true");
         DEFAULT_VALUES.put("username-changes", "true");
         DEFAULT_VALUES.put("worldedit", "true");
@@ -181,6 +183,7 @@ public class Config extends Language {
         HEADERS.put("player-interactions", new String[] { "# Track player interactions, such as when a player opens a door, presses", "# a button, or opens a chest. Player interactions can't be rolled back." });
         HEADERS.put("player-messages", new String[] { "# Logs messages that players send in the chat." });
         HEADERS.put("player-commands", new String[] { "# Logs all commands used by players." });
+        HEADERS.put("ignored-commands", new String[] { "# Comma-separated list of commands to skip logging (example: \"/login,/register\")." });
         HEADERS.put("player-sessions", new String[] { "# Logs the logins and logouts of players." });
         HEADERS.put("username-changes", new String[] { "# Logs when a player changes their Minecraft username." });
         HEADERS.put("worldedit", new String[] { "# Logs changes made via the plugin \"WorldEdit\" if it's in use on your server." });
@@ -242,6 +245,7 @@ public class Config extends Language {
         this.PLAYER_INTERACTIONS = this.getBoolean("player-interactions");
         this.PLAYER_MESSAGES = this.getBoolean("player-messages");
         this.PLAYER_COMMANDS = this.getBoolean("player-commands");
+        this.IGNORED_COMMANDS = this.getString("ignored-commands");
         this.PLAYER_SESSIONS = this.getBoolean("player-sessions");
         this.USERNAME_CHANGES = this.getBoolean("username-changes");
         this.WORLDEDIT = this.getBoolean("worldedit");
